@@ -18,6 +18,39 @@
     --foreground: #ededed;
   }
 }
+.dotted-mask {
+  position: relative;
+}
+
+.dotted-mask::before {
+  content: "";
+  position: fixed;
+  inset: 0; /* top:0 right:0 bottom:0 left:0 */
+  pointer-events: none;
+
+  /* your dotted mask EXACTLY as-is */
+  --dot-size: 4px;
+  --gap: 8px;
+
+  mask-image: radial-gradient(
+    circle var(--dot-size),
+    rgb(255, 255, 255) 0%,
+    transparent 100%
+  );
+  mask-size: var(--gap) var(--gap);
+  mask-repeat: repeat;
+
+  -webkit-mask-image: radial-gradient(
+    circle var(--dot-size),
+    white 0%,
+    transparent 100%
+  );
+  -webkit-mask-size: var(--gap) var(--gap);
+  -webkit-mask-repeat: repeat;
+
+  background: rgb(0, 0, 0); /* this is KEY: mask doesn't work without a fill */
+  z-index: 10; /* above video, below text */
+}
 
 body {
   background: var(--background);
