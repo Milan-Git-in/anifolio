@@ -70,7 +70,7 @@ export default function Audio() {
       try {
         el.load();
       } catch (e) {
-        // some browsers may throw if load used oddly, ignore
+        console.error(e);
       }
     }
 
