@@ -43,7 +43,7 @@ const Gate = (props: {
         <video ref={vidRef} src="/webm/eyes.webm" muted playsInline />
         <div className="flex flex-col items-center text-xl gap-3 z-10">
           <div className="flex gap-5 items-center">
-            <img src="/svgs/Shadow.svg" className="w-32 invert " />
+            <img src="/Svgs/Shadow.svg" className="w-32 invert " />
             <p>
               Patience, Cool Stuff <br /> Takes Time...
             </p>
