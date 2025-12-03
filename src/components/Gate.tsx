@@ -1,13 +1,16 @@
 "use client";
+import { useAudio } from "@/Hooks/useAudio";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 
 const Gate = (props: {
   setConfirmed: Dispatch<SetStateAction<boolean>>;
   ready: boolean;
+  isMobile: boolean;
 }) => {
-  const { setConfirmed, ready } = props;
+  const { setConfirmed, ready, isMobile } = props;
   const [progress, setProgress] = useState(0);
   const vidRef = useRef<HTMLVideoElement>(null);
+  const { setIsAudioPlaying } = useAudio();
   useEffect(() => {
     if (ready && vidRef.current) {
       vidRef.current.currentTime = 0; // start from beginning
@@ -50,13 +53,25 @@ const Gate = (props: {
             <p>{progress} %</p>
           </div>
           {ready && (
-            <div>
-              THIS SITE USES MUSIC FOR A BETTER EXPERIENCE. <br />
-              YOU CAN DISABLE IT AT ANY TIME USING THE BUTTON IN THE TOP CORNER.
+            <div className="flex flex-col gap-1">
+              <p>THIS SITE USES MUSIC FOR A BETTER EXPERIENCE.</p>
+              <p>
+                YOU CAN DISABLE IT AT ANY TIME USING THE BUTTON IN THE TOP
+                CORNER.
+              </p>
+              {isMobile && (
+                <p>MAKE SURE TO VISIT ON DESKTOP FOR BETTER EXPERIENCE</p>
+              )}
             </div>
           )}
           {ready && (
-            <button className="p-3 rounded-full border-white  text-white border">
+            <button
+              className="p-3 rounded-full border-white  text-white border"
+              onClick={() => {
+                setIsAudioPlaying(true);
+                setConfirmed(true);
+              }}
+            >
               OK, I UNDERSTAND
             </button>
           )}

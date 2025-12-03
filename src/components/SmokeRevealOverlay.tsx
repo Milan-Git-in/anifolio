@@ -228,7 +228,15 @@ export default function SmokeRevealOverlay({
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {/* LAYER 1: CHILDREN CONTENT (Z-INDEX 0) */}
-      <div className="absolute inset-0 z-0">{children}</div>
+      <div className="absolute inset-0 z-0">
+        {/*
+          The children prop is a ReactNode. If it's a single element,
+          we can clone it and inject a new prop: isRevealed.
+        */}
+        {React.isValidElement(children)
+          ? React.cloneElement(children, { isRevealed: isRevealed } as any)
+          : children}
+      </div>
 
       {/* LAYER 2: SMOKE CANVAS OVERLAY (Z-INDEX 50) */}
       <div
@@ -247,11 +255,11 @@ export default function SmokeRevealOverlay({
 
         {/* Visibility Hint */}
         {!isRevealed && (
-          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white/50 text-sm font-mono tracking-[0.3em] uppercase pointer-events-none flex flex-col items-center gap-2 animate-pulse">
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-purple-500 text-sm font-mono tracking-[0.3em] uppercase pointer-events-none flex flex-col items-center gap-2 animate-pulse">
             <div className="flex items-center gap-2">
               <Move className="w-4 h-4" /> MOVE TO PEEK
             </div>
-            <div className="flex items-center gap-2 text-white/30 text-xs">
+            <div className="flex items-center gap-2 text-xs">
               <MousePointer2 className="w-3 h-3" /> CLICK TO BREACH
             </div>
           </div>
