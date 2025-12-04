@@ -1,19 +1,23 @@
 import { useEffect, useState } from "react";
 
 export default function useIsMobile(): boolean {
+  const breakpoint = 1024; // cover tablets too
+
+  const getState = () =>
+    typeof window !== "undefined" ? window.innerWidth <= breakpoint : false;
+
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {
-    // Only run on client
-    const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+    // run once on mount (correct initial value)
+    setIsMobile(getState());
 
-    const detectedMobile =
-      /android/i.test(ua) ||
-      /iPhone|iPad|iPod/i.test(ua) ||
-      /Windows Phone/i.test(ua) ||
-      /mobile/i.test(ua);
+    const handleResize = () => {
+      setIsMobile(getState());
+    };
 
-    setIsMobile(detectedMobile);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return isMobile;

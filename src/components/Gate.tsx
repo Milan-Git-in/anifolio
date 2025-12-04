@@ -54,12 +54,15 @@ const Gate = (props: {
           </div>
           {ready && (
             <div className="flex flex-col gap-1">
-              <p>THIS SITE USES MUSIC FOR A BETTER EXPERIENCE.</p>
-              <p>
-                YOU CAN DISABLE IT AT ANY TIME USING THE BUTTON IN THE TOP
-                CORNER.
-              </p>
-              {isMobile && (
+              {!isMobile ? (
+                <>
+                  <p>THIS SITE USES MUSIC FOR A BETTER EXPERIENCE.</p>
+                  <p>
+                    YOU CAN DISABLE IT AT ANY TIME USING THE BUTTON IN THE TOP
+                    CORNER.
+                  </p>
+                </>
+              ) : (
                 <p>MAKE SURE TO VISIT ON DESKTOP FOR BETTER EXPERIENCE</p>
               )}
             </div>
@@ -68,7 +71,7 @@ const Gate = (props: {
             <button
               className="p-3 rounded-full border-white  text-white border"
               onClick={() => {
-                setIsAudioPlaying(true);
+                !isMobile && setIsAudioPlaying(true);
                 setConfirmed(true);
               }}
             >

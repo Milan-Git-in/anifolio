@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, ReactNode } from "react";
 import { MousePointer2, Move } from "lucide-react";
+import { useRevealed } from "@/Hooks/useRevealed";
 
 /**
  * Reusable component for the CS2 Smoke Reveal Effect.
@@ -31,7 +32,8 @@ export default function SmokeRevealOverlay({
   overlayColor = "#000000",
 }: SmokeRevealProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isRevealed, setIsRevealed] = useState(false);
+  const { isRevealed, setIsRevealed } = useRevealed();
+  // const [isRevealed, setIsRevealed] = useState(false);
 
   // Refs for animation state
   const particles = useRef<Particle[]>([]);

@@ -1,5 +1,6 @@
 "use client";
 import { useAudio } from "@/Hooks/useAudio";
+import useIsMobile from "@/Hooks/useIsMobile";
 import { RefreshCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -134,54 +135,56 @@ export default function Audio() {
 
   // For visuals, use mounted && isAudioPlaying so SSR renders the "not playing" variant
   const active = mounted && isAudioPlaying;
-
+  const isMobile = useIsMobile();
   return (
-    <div
-      ref={containerRef}
-      onClick={handleClick}
-      className="absolute z-20 bg-transparent right-10 w-60 h-30 flex gap-10 items-center justify-center cursor-pointer overflow-hidden"
-      aria-hidden={false}
-      role="button"
-    >
-      <svg
-        className="w-full h-full block pointer-events-none"
-        preserveAspectRatio="none"
+    !isMobile && (
+      <div
+        ref={containerRef}
+        onClick={handleClick}
+        className="absolute z-20 bg-transparent right-10 w-60 h-30 flex gap-10 items-center justify-center cursor-pointer overflow-hidden"
+        aria-hidden={false}
+        role="button"
       >
-        <defs>
-          <filter id="neon-glow" x="4%" y="0%" width="100%" height="50%">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
+        <svg
+          className="w-full h-full block pointer-events-none"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <filter id="neon-glow" x="4%" y="0%" width="100%" height="50%">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
 
-        <path
-          ref={pathRef}
-          d=""
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="4"
-          style={{
-            stroke: active ? "#a259eb" : "#ffffff",
-            filter: active ? "url(#neon-glow)" : "none",
-            transition: "stroke 0.5s ease",
-            opacity: 0.9,
-          }}
+          <path
+            ref={pathRef}
+            d=""
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="4"
+            style={{
+              stroke: active ? "#a259eb" : "#ffffff",
+              filter: active ? "url(#neon-glow)" : "none",
+              transition: "stroke 0.5s ease",
+              opacity: 0.9,
+            }}
+          />
+        </svg>
+
+        <RefreshCcw
+          size={55}
+          className="active:animate-spin active:text-[#a259eb]"
+          onClick={handleRefresh}
         />
-      </svg>
 
-      <RefreshCcw
-        size={55}
-        className="active:animate-spin active:text-[#a259eb]"
-        onClick={handleRefresh}
-      />
-
-      {/* Keep the audio element in the DOM always (no SSR/CSR mismatch from attributes).
+        {/* Keep the audio element in the DOM always (no SSR/CSR mismatch from attributes).
           We control playback programmatically after mount via audioRef. */}
-      <audio ref={audioRef} src={audio ?? ""} />
-    </div>
+        <audio ref={audioRef} src={audio ?? ""} />
+      </div>
+    )
   );
 }

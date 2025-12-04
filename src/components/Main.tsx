@@ -1,7 +1,6 @@
 "use client";
 import { useEffect } from "react";
 import SmokeRevealOverlay from "./SmokeRevealOverlay";
-import Video from "./Video";
 import VideoPlayer from "./Video";
 
 export default function Main(props: {
