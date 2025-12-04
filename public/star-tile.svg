@@ -1,0 +1,5 @@
+<svg width="12" height="12" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+  <!-- star shape -->
+  <polygon points="6,1 7,4 11,4 8,6 9,9 6,7.5 3,9 4,6 1,4 5,4" 
+           fill="white" opacity="0.3" />
+</svg>

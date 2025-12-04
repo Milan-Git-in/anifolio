@@ -52,6 +52,49 @@
   z-index: 10; /* above video, below text */
 }
 
+/* Star shape mask (sharp points) */
+.star-mask {
+  mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 60%),
+    conic-gradient(
+      from 0deg,
+      black 0deg 30deg,
+      transparent 30deg 60deg,
+      black 60deg 90deg,
+      transparent 90deg 120deg,
+      black 120deg 150deg,
+      transparent 150deg 180deg,
+      black 180deg 210deg,
+      transparent 210deg 240deg,
+      black 240deg 270deg,
+      transparent 270deg 300deg,
+      black 300deg 330deg,
+      transparent 330deg 360deg
+    );
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+}
+
+/* Flickering uneven glow */
+@keyframes starFlicker {
+  0%,
+  100% {
+    opacity: 0.38;
+  }
+  35% {
+    opacity: 0.45;
+  }
+  60% {
+    opacity: 0.33;
+  }
+  80% {
+    opacity: 0.42;
+  }
+}
+
+.animate-starFlicker {
+  animation: starFlicker 3.5s infinite ease-in-out;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
