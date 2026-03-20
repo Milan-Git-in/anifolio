@@ -17,9 +17,7 @@ const WaterDistortionCanvas = dynamic(
   { ssr: false },
 );
 
-const images = [
-  "https://github.com/Milan-Git-in/anifolio/blob/master/public/images/Image.webp?raw=true",
-];
+const images = ["https://eminent-ones.vercel.app/images/Image.webp"];
 
 export default function About() {
   // Static settings used instead of Leva controls so the UI doesn't render
