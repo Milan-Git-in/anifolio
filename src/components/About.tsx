@@ -17,7 +17,7 @@ const WaterDistortionCanvas = dynamic(
   { ssr: false },
 );
 
-const images = ["image.webp"];
+const images = ["images/image.webp"];
 
 export default function About() {
   // Static settings used instead of Leva controls so the UI doesn't render
