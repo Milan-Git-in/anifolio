@@ -17,7 +17,9 @@ const WaterDistortionCanvas = dynamic(
   { ssr: false },
 );
 
-const images = ["images/image.webp"];
+const images = [
+  "https://github.com/Milan-Git-in/anifolio/blob/master/public/images/Image.webp?raw=true",
+];
 
 export default function About() {
   // Static settings used instead of Leva controls so the UI doesn't render
