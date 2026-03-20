@@ -90,7 +90,7 @@ export default function Audio() {
       <div
         ref={containerRef}
         onClick={handleClick}
-        className="absolute right-10  h-6 z-20 top-5 bg-transparent  cursor-pointer overflow-hidden flex items-center gap-5"
+        className="absolute right-10  h-6 z-50 top-5 bg-transparent  cursor-pointer overflow-hidden flex items-center gap-5"
       >
         {/* SVG WAVE */}
         <svg

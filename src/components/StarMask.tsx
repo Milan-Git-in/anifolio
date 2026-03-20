@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useRef } from "react";
 
 // Define the type for an individual star object
@@ -7,6 +8,18 @@ interface Star {
   opacity: number;
   targetOpacity: number;
   isTwinkling: boolean;
+}
+
+// Define the type for smoke particles
+interface Smoke {
+  x: number;
+  y: number;
+  radius: number;
+  opacity: number;
+  targetOpacity: number;
+  duration: number;
+  elapsed: number;
+  isActive: boolean;
 }
 
 // Define the configuration types
@@ -52,6 +65,8 @@ const StarMask: React.FC<StarMaskProps> = ({ config: propConfig }) => {
     let width: number = 0;
     let height: number = 0;
     let stars: Star[] = [];
+    let smokes: Smoke[] = [];
+    let smokeSpawnCounter: number = 0;
 
     const initStars = (): void => {
       width = canvas.width = window.innerWidth;
@@ -84,7 +99,51 @@ const StarMask: React.FC<StarMaskProps> = ({ config: propConfig }) => {
       ctx.fillStyle = config.maskColor;
       ctx.fillRect(0, 0, width, height);
 
-      // 3. Update and Draw Stars
+      // 3. Spawn new smoke randomly
+      smokeSpawnCounter++;
+      if (smokeSpawnCounter > 15 && Math.random() < 0.3) {
+        // Spawn new smoke at random location
+        const smokeX = Math.random() * width;
+        const smokeY = Math.random() * height;
+        const smokeRadius = 60 + Math.random() * 10; // 40-50px spread
+
+        smokes.push({
+          x: smokeX,
+          y: smokeY,
+          radius: smokeRadius,
+          opacity: 0.15,
+          targetOpacity: 0.15,
+          duration: 2000 + Math.random() * 1000,
+          elapsed: 0,
+          isActive: true,
+        });
+        smokeSpawnCounter = 0;
+      }
+
+      // 4. Update and Draw Smoke
+      smokes = smokes.filter((smoke) => smoke.isActive);
+      smokes.forEach((smoke) => {
+        smoke.elapsed += 16; // Approximate frame time
+
+        // Fade out over duration
+        const progress = smoke.elapsed / smoke.duration;
+        smoke.opacity = 0.15 * (1 - progress);
+
+        // Mark as inactive when done
+        if (progress >= 1) {
+          smoke.isActive = false;
+        }
+
+        // Draw smoke with blur effect (drop shadow style)
+        ctx.fillStyle = `rgba(255, 255, 255, ${smoke.opacity})`;
+        ctx.filter = `blur(${smoke.radius * 0.8}px)`;
+        ctx.beginPath();
+        ctx.arc(smoke.x, smoke.y, smoke.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.filter = "none";
+      });
+
+      // 5. Update and Draw Stars
       stars.forEach((star) => {
         // Randomly trigger a twinkle if not already twinkling
         if (!star.isTwinkling && Math.random() < config.twinkleChance) {

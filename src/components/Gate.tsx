@@ -41,7 +41,7 @@ const Gate = (props: {
   }, [ready]);
 
   return (
-    <div className="bg-black dotted-mask ">
+    <div className="bg-black dotted-mask  ">
       <div className=" w-full h-dvh flex flex-col items-center justify-center">
         <video ref={vidRef} src="/webm/eyes.webm" muted playsInline />
         <div className="flex flex-col items-center text-xl gap-3 z-10">
@@ -53,7 +53,7 @@ const Gate = (props: {
             <p>{progress} %</p>
           </div>
           {ready && (
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 px-10">
               {!isMobile ? (
                 <>
                   <p>THIS SITE USES MUSIC FOR A BETTER EXPERIENCE.</p>

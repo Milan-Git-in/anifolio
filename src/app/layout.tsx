@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Kanit } from "next/font/google";
 import "./globals.css";
 import Audio from "@/components/Audio";
+import StarMask from "@/components/StarMask";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${kanit.className} antialiased`}>
         <Audio />
+
         {children}
       </body>
     </html>

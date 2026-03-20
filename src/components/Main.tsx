@@ -3,11 +3,12 @@ import { useEffect } from "react";
 import SmokeRevealOverlay from "./SmokeRevealOverlay";
 import VideoPlayer from "./Video";
 
-export default function Main(props: {
+export default function Background(props: {
   onReady: () => void;
   isMobile: boolean;
+  mousePosition: { x: number; y: number };
 }) {
-  const { onReady, isMobile } = props;
+  const { onReady, isMobile, mousePosition } = props;
   useEffect(() => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -17,7 +18,7 @@ export default function Main(props: {
   }, []);
 
   return (
-    <SmokeRevealOverlay>
+    <SmokeRevealOverlay isMobile={isMobile} mousePosition={mousePosition}>
       <VideoPlayer isMobile={isMobile} />
     </SmokeRevealOverlay>
   );

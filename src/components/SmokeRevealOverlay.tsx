@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, ReactNode } from "react";
 import { MousePointer2, Move } from "lucide-react";
 import { useRevealed } from "@/Hooks/useRevealed";
+import useIsMobile from "@/Hooks/useIsMobile";
 
 /**
  * Reusable component for the CS2 Smoke Reveal Effect.
@@ -25,27 +26,30 @@ interface Particle {
 interface SmokeRevealProps {
   children: ReactNode;
   overlayColor?: string; // Optional custom color for the darkness (e.g., '#111111')
+  isMobile: boolean;
+  mousePosition?: { x: number; y: number };
 }
 
 export default function SmokeRevealOverlay({
   children,
-  overlayColor = "#000000",
+  overlayColor = "#1222222",
+  isMobile,
+  mousePosition,
 }: SmokeRevealProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { isRevealed, setIsRevealed } = useRevealed();
+  // const { isRevealed, setIsRevealed } = useRevealed();
   // const [isRevealed, setIsRevealed] = useState(false);
-
+  const isRevealed = false;
   // Refs for animation state
   const particles = useRef<Particle[]>([]);
   const animationFrameId = useRef<number>(0);
   const smokeBrush = useRef<HTMLCanvasElement | null>(null);
-
   /**
    * Generates a random "cloud puff" texture on an off-screen canvas.
    * This textured brush creates the irregular, flowy smoke shapes.
    */
   const createSmokeBrush = () => {
-    const size = 300;
+    const size = 250;
     const canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;
@@ -56,7 +60,7 @@ export default function SmokeRevealOverlay({
     const centerY = size / 2;
 
     for (let i = 0; i < 30; i++) {
-      const radius = 20 + Math.random() * 60;
+      const radius = 50 + Math.random() * 100;
       const x = centerX + (Math.random() - 0.5) * (size * 0.4);
       const y = centerY + (Math.random() - 0.5) * (size * 0.4);
 
@@ -82,7 +86,7 @@ export default function SmokeRevealOverlay({
     x: number,
     y: number,
     count: number,
-    isExplosion: boolean
+    isExplosion: boolean,
   ) => {
     for (let i = 0; i < count; i++) {
       let vx = 0;
@@ -96,8 +100,8 @@ export default function SmokeRevealOverlay({
         vy = Math.sin(angle) * speed;
       } else {
         // Normal drift for mouse-driven smoke
-        vx = (Math.random() - 0.5) * 2;
-        vy = (Math.random() - 0.5) * 2;
+        vx = 0;
+        vy = 0;
       }
 
       particles.current.push({
@@ -105,16 +109,30 @@ export default function SmokeRevealOverlay({
         y: y,
         vx: vx,
         vy: vy,
-        size: isExplosion ? 80 + Math.random() * 50 : 20 + Math.random() * 40,
-        maxSize: isExplosion ? window.innerWidth : 120 + Math.random() * 80,
-        angle: Math.random() * Math.PI * 2,
-        spin: (Math.random() - 0.5) * 0.1,
-        life: 1,
-        decay: isExplosion ? 0.005 : 0.005 + Math.random() * 0.01,
-        growth: isExplosion ? 30 : 1 + Math.random() * 1.5,
+        size: isExplosion ? 80 + Math.random() * 50 : 30 + Math.random() * 60,
+        maxSize: isExplosion ? window.innerWidth : window.innerWidth * 0.05,
+        angle: Math.random() * Math.PI * 1,
+        spin: (Math.random() - 0.5) * 0.4,
+        life: 10,
+        decay: isExplosion ? 0.005 : 0.5,
+        growth: isExplosion ? 30 : 7,
       });
     }
   };
+
+  /**
+   * Spawn particles when mouse position changes (from prop drilling)
+   * This effect detects changes in the passed mousePosition prop
+   * and spawns particles at those coordinates in the overlay
+   */
+  useEffect(() => {
+    if (!mousePosition || isRevealed) return;
+
+    // Spawn particles at the received mouse position
+    // We spawn fewer particles here (1) compared to direct canvas events
+    // to avoid performance issues from rapid updates
+    spawnParticles(mousePosition.x, mousePosition.y, 10, false);
+  }, [mousePosition, isRevealed]);
 
   useEffect(() => {
     smokeBrush.current = createSmokeBrush();
@@ -156,7 +174,7 @@ export default function SmokeRevealOverlay({
         p.y += p.vy;
         p.size += p.growth;
         p.angle += p.spin;
-        p.life -= p.decay;
+        // Don't decay - keep smoke forever
         p.vx *= 0.95; // Friction
         p.vy *= 0.95; // Friction
 
@@ -165,19 +183,22 @@ export default function SmokeRevealOverlay({
           ctx.translate(p.x, p.y);
           ctx.rotate(p.angle);
 
-          ctx.globalAlpha = p.life;
+          // Apply horizontal distortion: wider horizontally (2x), narrower vertically (0.6x)
+          ctx.scale(2, 0.6);
+          ctx.globalAlpha = 1; // Keep fully opaque
           ctx.drawImage(
             smokeBrush.current,
             -p.size / 2,
             -p.size / 2,
             p.size,
-            p.size
+            p.size,
           );
 
           ctx.restore();
         }
 
-        if (p.life <= 0 || p.size >= p.maxSize) {
+        // Only remove if size exceeds a very large threshold
+        if (p.size >= p.maxSize * 2) {
           particles.current.splice(i, 1);
           i--;
         }
@@ -206,30 +227,13 @@ export default function SmokeRevealOverlay({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Spawn 3 particles per mouse move event for a dense trail
-    spawnParticles(x, y, 3, false);
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
-    if (isRevealed) return;
-
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    // 1. Trigger the massive, outward-shooting explosion
-    spawnParticles(x, y, 100, true);
-
-    // 2. Wait for the explosion to clear the screen before removing the overlay
-    setTimeout(() => {
-      setIsRevealed(true);
-    }, 800);
+    // Spawn 6 particles per mouse move event for a dense trail
+    spawnParticles(x, y, 100, false);
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      {/* LAYER 1: CHILDREN CONTENT (Z-INDEX 0) */}
+    <div className="relative w-full h-screen overflow-hidden z-0">
+      {/* LAYER 1: CHILDREN CONTENT (Z-INDEX 0) - VIDEO BACKGROUND */}
       <div className="absolute inset-0 z-0">
         {/*
           The children prop is a ReactNode. If it's a single element,
@@ -240,10 +244,10 @@ export default function SmokeRevealOverlay({
           : children}
       </div>
 
-      {/* LAYER 2: SMOKE CANVAS OVERLAY (Z-INDEX 50) */}
+      {/* LAYER 2: SMOKE CANVAS OVERLAY (Z-INDEX 10) - ABOVE VIDEO, BELOW PAGE CONTENT */}
       <div
-        className={`absolute inset-0 z-50 transition-opacity duration-1000 ${
-          isRevealed
+        className={`absolute inset-0 z-10 transition-opacity duration-1000 pointer-events-auto ${
+          isRevealed || isMobile
             ? "opacity-0 pointer-events-none"
             : "opacity-100 cursor-none"
         }`}
@@ -251,12 +255,11 @@ export default function SmokeRevealOverlay({
         <canvas
           ref={canvasRef}
           onMouseMove={handleMouseMove}
-          onClick={handleClick}
           className="block touch-none w-full h-full"
         />
 
         {/* Visibility Hint */}
-        {!isRevealed && (
+        {/* {!isRevealed && (
           <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-purple-500 text-sm font-mono tracking-[0.3em] uppercase pointer-events-none flex flex-col items-center gap-2 animate-pulse">
             <div className="flex items-center gap-2">
               <Move className="w-4 h-4" /> MOVE TO PEEK
@@ -265,7 +268,8 @@ export default function SmokeRevealOverlay({
               <MousePointer2 className="w-3 h-3" /> CLICK TO BREACH
             </div>
           </div>
-        )}
+        )} */}
+        {/* <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-purple-500 text-sm font-mono tracking-[0.3em] uppercase pointer-events-none flex flex-col items-center gap-2 animate-pulse"></div> */}
       </div>
     </div>
   );
