@@ -1,5 +1,6 @@
 "use client";
 import { useAudio } from "@/Hooks/useAudio";
+import { motion } from "motion/react";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 
 const Gate = (props: {
@@ -12,26 +13,33 @@ const Gate = (props: {
   const vidRef = useRef<HTMLVideoElement>(null);
   const { setIsAudioPlaying } = useAudio();
   useEffect(() => {
-    if (ready && vidRef.current) {
-      vidRef.current.currentTime = 0; // start from beginning
-      vidRef.current.play(); // play once
+    if (ready && progress >= 100 && vidRef.current) {
+      vidRef.current.currentTime = 0;
+      vidRef.current.playbackRate = 0.7;
+      vidRef.current.play();
     }
-
+  }, [ready, progress]);
+  useEffect(() => {
     let interval: NodeJS.Timeout;
 
     const tick = () => {
-      // if ready -> insta-finish
-      if (ready) {
-        setProgress(100);
-        clearInterval(interval);
-        return;
-      }
-
-      // lil fake loading crawl
       setProgress((p) => {
-        if (p >= 99) return 99;
-        const step = Math.random() * 3; // 0–3%
-        return Math.min(p + step, 99);
+        // if already completed
+        if (p >= 100) return 100;
+
+        // if ready AND almost done → finish
+        if (ready && p >= 99) {
+          clearInterval(interval);
+          return 100;
+        }
+
+        // otherwise slowly move toward 99
+        if (p < 99) {
+          const step = Math.random() * 6 + 0.5; // smoother crawl (0.5–2.5)
+          return Math.min(p + step, 99);
+        }
+
+        return p;
       });
     };
 
@@ -50,7 +58,7 @@ const Gate = (props: {
             <p>
               Patience, Cool Stuff <br /> Takes Time...
             </p>
-            <p>{progress} %</p>
+            <p>{Math.floor(progress)} %</p>
           </div>
           {ready && (
             <div className="flex flex-col gap-1 px-10">
@@ -67,15 +75,19 @@ const Gate = (props: {
               )}
             </div>
           )}
-          {ready && (
+          {ready && progress === 100 && (
             <button
-              className="p-3 rounded-full border-white  text-white border"
+              className="group relative p-3 rounded-full border-white text-white border flex flex-col overflow-hidden"
               onClick={() => {
                 !isMobile && setIsAudioPlaying(true);
                 setConfirmed(true);
               }}
             >
-              OK, I UNDERSTAND
+              <p className="relative z-20 group-hover:text-black transition-colors duration-400">
+                OK, I UNDERSTAND
+              </p>
+
+              <span className="absolute bottom-0 left-0 w-[190px] h-[55px] bg-white rounded-full translate-y-16 group-hover:translate-y-0 transition-all duration-400 z-0"></span>
             </button>
           )}
         </div>

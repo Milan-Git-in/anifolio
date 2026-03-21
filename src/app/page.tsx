@@ -9,7 +9,7 @@ export default function Page() {
     <>
       <HeroSection confirmed={confirmed} setConfirmed={setConfirmed} />
       <div className={`${confirmed ? "block" : "hidden"}`}>
-        <div className="">
+        <div className="w-full h-screen">
           <About />
         </div>
       </div>

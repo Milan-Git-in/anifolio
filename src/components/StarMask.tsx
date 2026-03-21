@@ -92,17 +92,17 @@ const StarMask: React.FC<StarMaskProps> = ({ config: propConfig }) => {
     };
 
     const draw = (): void => {
-      // 1. Clear the canvas purely
+      // 1. Clear the canvas
       ctx.clearRect(0, 0, width, height);
 
       // 2. Draw the "Black Glasses" Mask
       ctx.fillStyle = config.maskColor;
       ctx.fillRect(0, 0, width, height);
 
-      // 3. Spawn new smoke randomly
+      // 3. Update and Draw Smoke (reduced frequency and simpler rendering)
       smokeSpawnCounter++;
-      if (smokeSpawnCounter > 15 && Math.random() < 0.3) {
-        // Spawn new smoke at random location
+      if (smokeSpawnCounter > 30 && Math.random() < 0.2) {
+        // Reduced spawn rate
         const smokeX = Math.random() * width;
         const smokeY = Math.random() * height;
         const smokeRadius = 60 + Math.random() * 10; // 40-50px spread
@@ -111,68 +111,77 @@ const StarMask: React.FC<StarMaskProps> = ({ config: propConfig }) => {
           x: smokeX,
           y: smokeY,
           radius: smokeRadius,
-          opacity: 0.15,
-          targetOpacity: 0.15,
-          duration: 2000 + Math.random() * 1000,
+          opacity: 0.12,
+          targetOpacity: 0.12,
+          duration: 1500 + Math.random() * 800,
           elapsed: 0,
           isActive: true,
         });
         smokeSpawnCounter = 0;
       }
 
-      // 4. Update and Draw Smoke
+      // Draw smoke with gradient instead of expensive blur
       smokes = smokes.filter((smoke) => smoke.isActive);
       smokes.forEach((smoke) => {
-        smoke.elapsed += 16; // Approximate frame time
+        smoke.elapsed += 16;
 
-        // Fade out over duration
         const progress = smoke.elapsed / smoke.duration;
-        smoke.opacity = 0.15 * (1 - progress);
+        smoke.opacity = 0.12 * (1 - progress);
 
-        // Mark as inactive when done
         if (progress >= 1) {
           smoke.isActive = false;
         }
 
-        // Draw smoke with blur effect (drop shadow style)
-        ctx.fillStyle = `rgba(255, 255, 255, ${smoke.opacity})`;
-        ctx.filter = `blur(${smoke.radius * 0.8}px)`;
-        ctx.beginPath();
-        ctx.arc(smoke.x, smoke.y, smoke.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.filter = "none";
+        // Use radial gradient instead of blur filter (much faster)
+        const gradient = ctx.createRadialGradient(
+          smoke.x,
+          smoke.y,
+          0,
+          smoke.x,
+          smoke.y,
+          smoke.radius,
+        );
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${smoke.opacity})`);
+        gradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(
+          smoke.x - smoke.radius,
+          smoke.y - smoke.radius,
+          smoke.radius * 2,
+          smoke.radius * 2,
+        );
       });
 
-      // 5. Update and Draw Stars
+      // 4. Draw Stars using optimized batch rendering
+      ctx.fillStyle = "white";
       stars.forEach((star) => {
-        // Randomly trigger a twinkle if not already twinkling
+        // Update twinkling logic
         if (!star.isTwinkling && Math.random() < config.twinkleChance) {
           star.isTwinkling = true;
           star.targetOpacity = config.peakStarOpacity;
         }
 
-        // Logic for fading in/out
         if (star.isTwinkling) {
           if (star.opacity < star.targetOpacity) {
             star.opacity += config.twinkleSpeed;
             if (star.opacity >= star.targetOpacity) {
-              // Reached peak, now target base opacity again
               star.targetOpacity = config.baseStarOpacity;
             }
           } else if (star.opacity > star.targetOpacity) {
             star.opacity -= config.twinkleSpeed;
             if (star.opacity <= config.baseStarOpacity) {
-              // Returned to normal, stop twinkling
               star.opacity = config.baseStarOpacity;
               star.isTwinkling = false;
             }
           }
         }
 
-        // Draw the individual star
-        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        // Set alpha once and reuse for batch drawing
+        ctx.globalAlpha = star.opacity;
         ctx.fillRect(star.x, star.y, config.starSize, config.starSize);
       });
+      ctx.globalAlpha = 1; // Reset alpha
 
       animationFrameId = requestAnimationFrame(draw);
     };
